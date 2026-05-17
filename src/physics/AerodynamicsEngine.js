@@ -1,7 +1,11 @@
 const EPSILON = 1e-9;
+// Unitless cap on normalized descent speed used in VRS blending.
 const MAX_DESCENT_RATIO = 2;
+// m/s horizontal airspeed where VRS susceptibility mostly fades out.
 const LOW_FORWARD_TRANSITION_SPEED = 3;
+// Unitless normalized descent ratio where VRS begins ramping in.
 const VRS_ONSET_RATIO = 0.7;
+// Unitless blend range from onset toward maximum VRS loss.
 const VRS_TRANSITION_RANGE = 1.3;
 
 function vec3(x = 0, y = 0, z = 0) {
@@ -213,6 +217,7 @@ function computeAerodynamics({
   bladeFlapCoefficient = 2e-4,
   inducedDownwashSpeed = 4,
 }) {
+  // Coordinate convention: body-frame +Y is rotor thrust axis (Y-up).
   const relativeVelocityWorld = sub(bodyVelocityWorld, windVelocityWorld);
 
   const cd = {
