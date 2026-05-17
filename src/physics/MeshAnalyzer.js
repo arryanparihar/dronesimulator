@@ -261,7 +261,8 @@ function analyzeMesh({
 
   // Heuristic shell area estimate from principal projections:
   // surface area ≈ 2 * (Ax + Ay + Az) for many near-convex hull-like meshes.
-  // Concave meshes can deviate noticeably; prefer explicit surface triangulation for high-fidelity mass.
+  // Concave meshes can deviate noticeably with no fixed error bound;
+  // prefer explicit surface triangulation for high-fidelity mass.
   const shellSurfaceAreaEstimate =
     2 *
     (projectedAreas.x + projectedAreas.y + projectedAreas.z);

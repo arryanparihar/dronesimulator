@@ -48,6 +48,7 @@ test("MeshAnalyzer computes volume, COM, and projected areas for a cube", () => 
   assert.ok(result.massKgSolid > 0);
   assert.ok(result.massKgShell > 0);
 
+  // For a cube of side length 2 about center axes: I = (1/12)*m*(2^2+2^2) = (2/3)*m.
   const expectedCubeInertia = (2 / 3) * result.massKgSolid;
   assert.ok(
     Math.abs(result.diagonalizedInertiaTensorKgM2[0][0] - expectedCubeInertia) <

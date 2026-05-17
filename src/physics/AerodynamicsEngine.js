@@ -1,4 +1,5 @@
 const EPSILON = 1e-9;
+// Module frame convention: body-frame +Y is rotor thrust axis (Y-up).
 // Unitless cap on normalized descent speed used in VRS blending.
 const MAX_DESCENT_RATIO = 2;
 // m/s horizontal airspeed where VRS susceptibility mostly fades out.
