@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 const {
   computeAerodynamics,
   updateMotorRPM,
+  computeAngularDragTorque,
 } = require("../src/physics/AerodynamicsEngine");
 
 test("directional drag follows 0.5 * rho * v^2 * Cd * A per axis", () => {
