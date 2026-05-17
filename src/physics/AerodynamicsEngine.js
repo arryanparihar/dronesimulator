@@ -41,6 +41,51 @@ function cross(a, b) {
   );
 }
 
+function isQuaternion(value) {
+  return (
+    value &&
+    typeof value === "object" &&
+    !Array.isArray(value) &&
+    typeof value.x === "number" &&
+    typeof value.y === "number" &&
+    typeof value.z === "number" &&
+    typeof value.w === "number"
+  );
+}
+
+function normalizeQuaternion(q) {
+  const norm = Math.sqrt(q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w);
+  if (norm < EPSILON) {
+    return { x: 0, y: 0, z: 0, w: 1 };
+  }
+  return {
+    x: q.x / norm,
+    y: q.y / norm,
+    z: q.z / norm,
+    w: q.w / norm,
+  };
+}
+
+function invertQuaternion(q) {
+  const normSq = q.x * q.x + q.y * q.y + q.z * q.z + q.w * q.w;
+  if (normSq < EPSILON) {
+    return { x: 0, y: 0, z: 0, w: 1 };
+  }
+  return {
+    x: -q.x / normSq,
+    y: -q.y / normSq,
+    z: -q.z / normSq,
+    w: q.w / normSq,
+  };
+}
+
+function rotateVectorByQuaternion(v, q) {
+  const qVec = vec3(q.x, q.y, q.z);
+  const uv = cross(qVec, v);
+  const uuv = cross(qVec, uv);
+  return add(v, add(scale(uv, 2 * q.w), scale(uuv, 2)));
+}
+
 function transposeMatrix3(m) {
   return [
     [m[0][0], m[1][0], m[2][0]],
@@ -72,8 +117,18 @@ function computeDirectionalDrag({
   relativeVelocityWorld,
   orientationBodyToWorld,
 }) {
-  const worldToBody = transposeMatrix3(orientationBodyToWorld);
-  const vBody = mulMat3Vec3(worldToBody, relativeVelocityWorld);
+  const orientationQuat = isQuaternion(orientationBodyToWorld)
+    ? normalizeQuaternion(orientationBodyToWorld)
+    : null;
+  const vBody = orientationQuat
+    ? rotateVectorByQuaternion(
+        relativeVelocityWorld,
+        invertQuaternion(orientationQuat)
+      )
+    : mulMat3Vec3(
+        transposeMatrix3(orientationBodyToWorld),
+        relativeVelocityWorld
+      );
 
   const dragBody = vec3(
     signedQuadraticDrag(vBody.x, projectedAreasM2.x, dragCoefficients.x, airDensity),
@@ -84,7 +139,9 @@ function computeDirectionalDrag({
   return {
     relativeVelocityBody: vBody,
     dragForceBody: dragBody,
-    dragForceWorld: mulMat3Vec3(orientationBodyToWorld, dragBody),
+    dragForceWorld: orientationQuat
+      ? rotateVectorByQuaternion(dragBody, orientationQuat)
+      : mulMat3Vec3(orientationBodyToWorld, dragBody),
   };
 }
 
@@ -157,7 +214,12 @@ function computePropellerHForce({
     speed;
   const unit = scale(horizontalVelocityBody, 1 / speed);
   const bodyForce = scale(unit, -forceMag);
-  return mulMat3Vec3(orientationBodyToWorld, bodyForce);
+  return isQuaternion(orientationBodyToWorld)
+    ? rotateVectorByQuaternion(
+        bodyForce,
+        normalizeQuaternion(orientationBodyToWorld)
+      )
+    : mulMat3Vec3(orientationBodyToWorld, bodyForce);
 }
 
 function computeBladeFlappingMoment({
@@ -171,7 +233,12 @@ function computeBladeFlappingMoment({
   const lateralFlow = vec3(relativeVelocityBody.x, 0, relativeVelocityBody.z);
   const omega2 = averageRotorOmegaRadPerSec * averageRotorOmegaRadPerSec;
   const momentBody = scale(cross(rotorAxisBody, lateralFlow), -bladeFlapCoefficient * omega2);
-  return mulMat3Vec3(orientationBodyToWorld, momentBody);
+  return isQuaternion(orientationBodyToWorld)
+    ? rotateVectorByQuaternion(
+        momentBody,
+        normalizeQuaternion(orientationBodyToWorld)
+      )
+    : mulMat3Vec3(orientationBodyToWorld, momentBody);
 }
 
 function updateMotorRPM({
@@ -192,8 +259,7 @@ function updateMotorRPM({
       ? tauBrakeSeconds || tauDecelSeconds
       : tauDecelSeconds
   );
-  const alpha = 1 - Math.exp(-dtSeconds / tau);
-  return currentRPM + (targetRPM - currentRPM) * alpha;
+  return targetRPM + (currentRPM - targetRPM) * Math.exp(-dtSeconds / tau);
 }
 
 function computeAerodynamics({

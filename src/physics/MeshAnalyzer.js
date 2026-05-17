@@ -189,22 +189,22 @@ function computeMassAndInertia(triangles, densityKgPerM3) {
   const ixzOrigin = -rho * intXZ;
   const iyzOrigin = -rho * intYZ;
 
-  const r2 = dot(centerOfMass, centerOfMass);
+  const d2 = dot(centerOfMass, centerOfMass);
   const shift = [
     [
-      mass * (r2 - centerOfMass.x * centerOfMass.x),
+      mass * (d2 - centerOfMass.x * centerOfMass.x),
       -mass * centerOfMass.x * centerOfMass.y,
       -mass * centerOfMass.x * centerOfMass.z,
     ],
     [
       -mass * centerOfMass.y * centerOfMass.x,
-      mass * (r2 - centerOfMass.y * centerOfMass.y),
+      mass * (d2 - centerOfMass.y * centerOfMass.y),
       -mass * centerOfMass.y * centerOfMass.z,
     ],
     [
       -mass * centerOfMass.z * centerOfMass.x,
       -mass * centerOfMass.z * centerOfMass.y,
-      mass * (r2 - centerOfMass.z * centerOfMass.z),
+      mass * (d2 - centerOfMass.z * centerOfMass.z),
     ],
   ];
 
