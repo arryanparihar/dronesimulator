@@ -88,3 +88,67 @@ test("motor commands are clamped to [0, 1]", () => {
   const stateLow = sim.getState();
   assert.equal(stateLow.motorCommands[0], 0);
 });
+
+test("createDroneSimulator validates motor configs", () => {
+  assert.throws(
+    () => createDroneSimulator({ mesh: cubeMesh(1) }),
+    /requires at least one motor config/i
+  );
+
+  assert.throws(
+    () => createDroneSimulator({ mesh: cubeMesh(1), motors: [null] }),
+    /Invalid motor config/i
+  );
+});
+
+test("createDroneSimulator rejects unknown materials in mesh analysis", () => {
+  assert.throws(
+    () =>
+      createDroneSimulator({
+        meshAnalysis: {
+          material: "unknownAlloy",
+          projectedAreasM2: { x: 1, y: 1, z: 1 },
+          dragScale: 1,
+          massKgSolid: 1,
+          massKgShell: 1,
+        },
+        motors: [{ maxRPM: 5000, thrustCoefficient: 1e-5 }],
+      }),
+    /Unknown material/i
+  );
+});
+
+test("step rejects non-positive time steps", () => {
+  const sim = createDroneSimulator({
+    mesh: cubeMesh(1),
+    environment: { gravityWorld: { x: 0, y: 0, z: 0 } },
+    motors: [{ maxRPM: 5000, thrustCoefficient: 1e-5 }],
+  });
+
+  assert.throws(() => sim.step(0), /dtSeconds/i);
+});
+
+test("mass override uses provided mass instead of mesh analysis", () => {
+  const sim = createDroneSimulator({
+    mesh: cubeMesh(1),
+    massKg: 12.5,
+    motors: [{ maxRPM: 5000, thrustCoefficient: 1e-5 }],
+  });
+
+  assert.equal(sim.getState().massKg, 12.5);
+});
+
+test("shell mass is used when solid mass is zero", () => {
+  const sim = createDroneSimulator({
+    meshAnalysis: {
+      material: "carbonFiberPolished",
+      projectedAreasM2: { x: 1, y: 1, z: 1 },
+      dragScale: 1,
+      massKgSolid: 0,
+      massKgShell: 2,
+    },
+    motors: [{ maxRPM: 5000, thrustCoefficient: 1e-5 }],
+  });
+
+  assert.equal(sim.getState().massKg, 2);
+});

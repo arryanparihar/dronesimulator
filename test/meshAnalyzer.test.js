@@ -65,3 +65,41 @@ test("MeshAnalyzer computes volume, COM, and projected areas for a cube", () => 
   assert.equal(result.diagonalizedInertiaTensorKgM2[0][2], 0);
   assert.equal(result.diagonalizedInertiaTensorKgM2[0][1], 0);
 });
+
+test("MeshAnalyzer rejects invalid vertices and unknown materials", () => {
+  assert.throws(
+    () => analyzeMesh({ vertices: [] }),
+    /requires at least 3 vertices/i
+  );
+
+  const { vertices, indices } = cubeMesh(1);
+  assert.throws(
+    () => analyzeMesh({ vertices, indices, material: "unobtanium" }),
+    /Unknown material/i
+  );
+});
+
+test("MeshAnalyzer returns zero mass and inertia for degenerate meshes", () => {
+  const result = analyzeMesh({
+    vertices: [
+      { x: 0, y: 0, z: 0 },
+      { x: 1, y: 0, z: 0 },
+      { x: 2, y: 0, z: 0 },
+    ],
+    material: "carbonFiberPolished",
+  });
+
+  assert.equal(result.volumeM3, 0);
+  assert.equal(result.massKgSolid, 0);
+  assert.equal(result.massKgShell, 0);
+  assert.deepEqual(result.inertiaTensorKgM2, [
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0],
+  ]);
+  assert.deepEqual(result.diagonalizedInertiaTensorKgM2, [
+    [0, 0, 0],
+    [0, 0, 0],
+    [0, 0, 0],
+  ]);
+});
