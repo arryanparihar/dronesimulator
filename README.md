@@ -2,10 +2,10 @@
 
 Core physics modules implemented:
 
-- `/home/runner/work/dronesimulator/dronesimulator/src/physics/MeshAnalyzer.js`
+- `src/physics/MeshAnalyzer.js`
   - Mesh bounds, projected areas, center of mass, volume-based mass estimation, and inertia tensor from tetrahedral volume integration.
   - Inertia/mass explicitly assume **uniform density solid** using the selected material density.
-- `/home/runner/work/dronesimulator/dronesimulator/src/physics/AerodynamicsEngine.js`
+- `src/physics/AerodynamicsEngine.js`
   - Directional aerodynamic drag (`Fd = 0.5 * rho * v^2 * Cd * A`) in body/world frames.
   - Angular aerodynamic damping torque.
   - Propeller H-force, blade flapping moment, and vortex-ring-state lift degradation factor.
