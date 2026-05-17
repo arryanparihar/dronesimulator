@@ -10,3 +10,12 @@ Core physics modules implemented:
   - Angular aerodynamic damping torque.
   - Propeller H-force, blade flapping moment, and vortex-ring-state lift degradation factor.
   - First-order motor RPM response model with accel/decel time constants.
+
+Application orchestration:
+
+- `src/simulator/DroneSimulator.js`
+  - Builds a runnable simulator from mesh geometry + motor/environment settings.
+  - Integrates `MeshAnalyzer` + `AerodynamicsEngine` in a fixed-step update loop.
+  - Updates motor RPM states, computes thrust/drag/weight net force, and advances body position/velocity.
+- `src/index.js`
+  - Top-level exports for mesh analysis, aerodynamics, materials, and simulator creation.
