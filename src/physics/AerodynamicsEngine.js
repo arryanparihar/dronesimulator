@@ -1,4 +1,8 @@
 const EPSILON = 1e-9;
+const MAX_DESCENT_RATIO = 2;
+const LOW_FORWARD_TRANSITION_SPEED = 3;
+const VRS_ONSET_RATIO = 0.7;
+const VRS_TRANSITION_RANGE = 1.3;
 
 function vec3(x = 0, y = 0, z = 0) {
   return { x, y, z };
@@ -117,10 +121,13 @@ function computeVortexRingStateFactor({
   const descentRatio = clamp(
     descending / Math.max(inducedDownwashSpeed, EPSILON),
     0,
-    2
+    MAX_DESCENT_RATIO
   );
-  const lowForwardFlightFactor = 1 - clamp(horizontalSpeedBody / 3, 0, 1);
-  const vrsStrength = clamp((descentRatio - 0.7) / 1.3, 0, 1) * lowForwardFlightFactor;
+  const lowForwardFlightFactor =
+    1 - clamp(horizontalSpeedBody / LOW_FORWARD_TRANSITION_SPEED, 0, 1);
+  const vrsStrength =
+    clamp((descentRatio - VRS_ONSET_RATIO) / VRS_TRANSITION_RANGE, 0, 1) *
+    lowForwardFlightFactor;
   return 1 - vrsStrength * (1 - minFactor);
 }
 
