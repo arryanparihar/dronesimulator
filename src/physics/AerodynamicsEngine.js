@@ -161,6 +161,7 @@ function computeBladeFlappingMoment({
   bladeFlapCoefficient = 2e-4,
   orientationBodyToWorld,
 }) {
+  // Assumes body-frame Y axis is the rotor thrust axis (Y-up frame convention).
   const rotorAxisBody = vec3(0, 1, 0);
   const lateralFlow = vec3(relativeVelocityBody.x, 0, relativeVelocityBody.z);
   const omega2 = averageRotorOmegaRadPerSec * averageRotorOmegaRadPerSec;

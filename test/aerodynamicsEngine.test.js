@@ -36,9 +36,14 @@ test("motor RPM update uses first-order response and different time constants", 
     tauDecelSeconds: 0.4,
   });
 
+  const expectedUp = 1000 + (2000 - 1000) * (1 - Math.exp(-0.1 / 0.2));
+  const expectedDown = 2000 + (1000 - 2000) * (1 - Math.exp(-0.1 / 0.4));
+
   assert.ok(up > 1000 && up < 2000);
   assert.ok(down > 1000 && down < 2000);
   assert.ok(up - 1000 > 2000 - down);
+  assert.ok(Math.abs(up - expectedUp) < 1e-9);
+  assert.ok(Math.abs(down - expectedDown) < 1e-9);
 });
 
 test("vortex ring state factor drops during strong vertical descent", () => {

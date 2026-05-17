@@ -259,7 +259,8 @@ function analyzeMesh({
   const projectedAreas = computeProjectedAreas(triangles);
   const massInertia = computeMassAndInertia(triangles, materialProps.densityKgPerM3);
 
-  // For convex bodies, Cauchy projection gives surface area ≈ 2 * (Ax + Ay + Az).
+  // Heuristic shell area estimate from principal projections:
+  // surface area ≈ 2 * (Ax + Ay + Az) for many near-convex hull-like meshes.
   // Concave meshes can deviate from this estimate.
   const shellSurfaceAreaEstimate =
     2 *
